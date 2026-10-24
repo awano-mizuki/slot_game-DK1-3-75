@@ -298,7 +298,7 @@
     <script>
         // ===== 設定(ここを変えると全体に反映される) =====
         // 倍率: ルール説明の表示と、獲得コインの計算の両方に使われる
-        const MULTIPLIER = { jackpot: 5, zorome: 3, other: 0 };
+        const MULTIPLIER = { jackpot: 13, zorome: 10, other: 0 };
         // 最後のメッセージを出してから、獲得コインの画面に移るまでの待ち時間(ミリ秒)
         const NEXT_DELAY = 10000;
         // メッセージが自動で次に進むまでの待ち時間(ミリ秒)
@@ -449,10 +449,10 @@
             numB.textContent = "-";
             numC.textContent = "-";
 
-            setTimeout(() => { numC.textContent = step.c; }, REVEAL_INTERVAL * 1);
+            setTimeout(() => { numA.textContent = step.c; }, REVEAL_INTERVAL * 1);
             setTimeout(() => { numB.textContent = step.b; }, REVEAL_INTERVAL * 2);
             setTimeout(() => {
-                numA.textContent = step.a;
+                numC.textContent = step.a;
                 if (!isLast) {
                     busy = false;
                     autoNext(); // 数字が揃ったあと、次がメッセージなら自動で出す

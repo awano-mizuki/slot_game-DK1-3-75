@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>スロットゲーム 一年三組</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=M+PLUS+Rounded+1c&family=Zen+Maru+Gothic&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            background-color: rgb(176, 61, 61);
+
+            font-family: "Zen Maru Gothic", sans-serif;
+            color: #ffd17de2;
+            font-weight: 600;
+            padding: 20px;
+            font-size: 24px;
+            line-height: 1.6;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        /* 3つの画面のうち、今使う1つだけを表示する */
+        .screen { width: 100%; max-width: 600px; text-align: center; }
+        .hidden { display: none; }
+
+        h1 { text-align: center; }
+
+        /* ---------- ① ルール説明 ---------- */
+        .panel {
+            background: rgba(0, 0, 0, 0.45);
+            border: 2px solid #fcf591;
+            border-radius: 8px;
+            padding: 8px 24px 24px;
+            text-align: left;
+        }
+        .panel ul, .panel ol { padding-left: 1.4em; }
+        .panel hr { border: 0; border-top: 2px dashed #fcf591; margin: 20px 0; }
+        #screen-rules .panel h3 { text-align: center; margin-top: 0; }
+        .bet-row { margin: 6px 0; }
+        .bet-row input[type="number"] { font-size: 20px; width: 6em; }
+
+        .btn {
+            font-family: inherit;
+            font-size: 22px;
+            font-weight: 600;
+            padding: 8px 28px;
+            border: 2px solid #fcf591;
+            border-radius: 8px;
+            background: #df3e3e;
+            color: #fff3b0;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+        .btn:hover { background: #c93030; }
+
+        /* ---------- ② スロット ---------- */
+        #game-screen {
+            font-family: "M PLUS Rounded 1c", sans-serif;
+            font-weight: 400;
+            font-style: normal;
+
+            position: relative;
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #fcf591;
+            padding: 24px;
+            background-color: #df3e3e;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 600px;
+            box-sizing: border-box;
+
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            width: 100px;
+            flex-shrink: 0;
+        }
+        .card-content { padding: 16px; }
+        .card-number {
+            font-size: 48px;
+            font-weight: bold;
+            text-align: center;
+            margin: 0;
+            color: #333;
+        }
+
+        #chance-area {
+            font-family: "Kosugi Maru", sans-serif;
+            margin: 12px auto 0;
+            max-width: 600px;
+            min-height: 1.6em;
+            text-align: center;
+            font-size: 18px;
+            color: #fff700;
+            text-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
+        }
+
+        /* ---------- ③ 獲得コイン ---------- */
+        #screen-result p { margin: 4px 0; }
+
+        /* ---------- ④ 管理者(スタッフ向けトリセツ) ---------- */
+        .admin {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+        }
+        .admin-link {
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: 600;
+            color: #fcf591;
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid #fcf591;
+            border-radius: 6px;
+            padding: 4px 12px;
+            cursor: pointer;
+        }
+        .admin-link:hover { background: rgba(0, 0, 0, 0.65); }
+
+        #screen-admin { max-width: 760px; }
+        .admin-doc { font-size: 18px; font-weight: 400; }
+        .admin-doc h2 { font-size: 24px; margin-bottom: 4px; }
+        .admin-doc h3 { font-size: 20px; margin-bottom: 4px; }
+        .admin-doc h4 { font-size: 18px; margin-bottom: 4px; }
+        .admin-doc pre {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 15px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="admin">
+        <button type="button" class="admin-link" id="admin-open">管理者サイトへ！</button>
+    </header>
+
+    <!-- ① ルール説明 -->
+    <section id="screen-rules" class="screen">
+        <h1>ルール説明</h1>
+        <div class="panel">
+            <strong>
+                <ul>
+                    <li>5~8の数字が三つ出てきます</li>
+                    <li>得点は、それぞれこうなっています
+                        <ol>
+                            <li>”777”が出た場合： <span id="rule-jackpot"></span>倍</li>
+                            <li>ゾロ目で終了した場合： <span id="rule-zorome"></span>倍</li>
+                            <li>そのほかの数字で終了した場合： <span id="rule-other"></span>倍</li>
+                        </ol>
+                    </li>
+                    <li>必ず、コインをかけてください（50以上）</li>
+                    <li>不具合が発生した場合、必ず近くのスタッフに言ってください</li>
+                    <li>二回したら次の人にゆずってください</li>
+                </ul>
+            </strong>
+
+            <hr>
+            <h3>どれくらいかけますか？</h3>
+            <form id="bet-form">
+                <p class="bet-row">
+                    <input type="radio" name="bet" id="bed_50" value="50" required>
+                    <label for="bed_50">50かける!</label>
+                </p>
+                <p class="bet-row">
+                    <input type="radio" name="bet" id="bed_100" value="100">
+                    <label for="bed_100">100かける!</label>
+                </p>
+                <p class="bet-row">
+                    <input type="radio" name="bet" id="bed_150" value="150">
+                    <label for="bed_150">150かける!</label>
+                </p>
+                <p class="bet-row">
+                    <input type="radio" name="bet" id="bed_200" value="200">
+                    <label for="bed_200">200かける!</label>
+                </p>
+                <p class="bet-row">
+                    <input type="radio" name="bet" id="bed_250" value="250">
+                    <label for="bed_250">250かける!</label>
+                </p>
+                <p class="bet-row">
+                    <input type="radio" name="bet" id="bed_300" value="300">
+                    <label for="bed_300">300かける!</label>
+                </p>
+                <p class="bet-row">
+                    <input type="radio" name="bet" id="bed_another" value="other">
+                    <label for="bed_another">それ以上かける!</label>
+                    <input type="number" id="bet_other" min="301" placeholder="301以上" required disabled>
+                </p>
+                <p style="text-align: center;">
+                    <button type="submit" class="btn">決定</button>
+                </p>
+            </form>
+        </div>
+    </section>
+
+    <!-- ② スロット -->
+    <section id="screen-game" class="screen hidden">
+        <h1>スロット/パソコン版 一年三組</h1>
+
+        <div id="game-screen">
+            <div class="card"><div class="card-content"><p class="card-number" id="num-a">-</p></div></div>
+            <div class="card"><div class="card-content"><p class="card-number" id="num-b">-</p></div></div>
+            <div class="card"><div class="card-content"><p class="card-number" id="num-c">-</p></div></div>
+        </div>
+
+        <div id="chance-area">カードをクリックしてスタート</div>
+    </section>
+
+    <!-- ③ 獲得コイン -->
+    <section id="screen-result" class="screen hidden">
+        <h1>獲得コイン</h1>
+        <p>かけたコイン: <span id="res-bet"></span></p>
+        <p>出た数字: <span id="res-numbers"></span></p>
+        <p>倍率: <span id="res-multiplier"></span>倍</p>
+        <h1><span id="res-coins"></span>ゲット！</h1>
+        <p>遊んでくれてありがとう！</p>
+        <button type="button" class="btn" id="back-button">トップに戻る</button>
+    </section>
+
+    <!-- ④ 管理者(スタッフ向けトリセツ) -->
+    <section id="screen-admin" class="screen hidden">
+        <h1>スタッフ向け-トリセツ</h1>
+        <div class="panel admin-doc">
+            <h2>1.手順</h2>
+            <ol>
+                <li>school_festival_all.html をインストールする。</li>
+                <li>school_festival_all.html のパスをgoogleの一番上にあるところに打ち込み、ENTERをおす。</li>
+                <li>終了！あとは後ろで見守るだけ！</li>
+            </ol>
+
+            <h2>2.そもそもこれは何？</h2>
+            <ul>
+                <li>八月序盤に私（粟野）がpython版を初めに作って、それをHTMLにするときに、Cloudeを使って頑張ったもの。</li>
+            </ul>
+
+            <h3>手動スロットチームにお詫び</h3>
+            <ul>
+                <li>もう、変えるのがだるすぎて倍率が死んでます（1/64）。なんならもう追加したくないです。</li>
+                <li>絵文字が無さすぎて数字です。</li>
+                <li>追加したかったらしてください。</li>
+            </ul>
+
+            <h4>手順</h4>
+            <ol>
+                <li>
+                    school_festival_all.html の script の中の showResult のifとかelse ifとか書いてるところに、下の形で書き足す。
+                    ゾロ目の判定（<code>last.a === last.b &amp;&amp; last.b === last.c</code>）より<strong>前</strong>に書くこと（後ろだと、先にゾロ目として扱われて届かない）。
+                    ちな、日本語は、変数として考えてね。
+                    <pre><code>} else if (last.a === 揃った数字 &amp;&amp; last.b === 揃った数字 &amp;&amp; last.c === 揃った数字) {
+                        multiplier = 倍にしたい数;</code></pre>
+                </li>
+                <li>保存する。（control + S）</li>
+                <li>ブラウザで school_festival_all.html を更新する。（F5）</li>
+            </ol>
+
+            <h2>3.不具合が起きたとき</h2>
+            <h3>クリックしても進まない</h3>
+            <ul>
+                <li>数字が出ている最中(約2秒)と、メッセージが自動で切り替わっている最中は、クリックが効かないように作ってある。少し待ってから、もう一度クリックしてね。</li>
+            </ul>
+            <h3>最初からやり直したい</h3>
+            <ul>
+                <li>ブラウザを更新する。（F5）獲得コインの画面なら、「トップに戻る」ボタンでも戻れる。</li>
+            </ul>
+            <h3>不具合が起きたとき</h3>
+            <ul>
+                <li>無理に直さず、ブラウザを更新（F5）して、ルール説明のページから始め直す。それでも直らなければ、作成者に連絡して。</li>
+            </ul>
+        </div>
+        <p><button type="button" class="btn" id="admin-back">もどる</button></p>
+    </section>
+
+    <script>
+        // ===== 設定(ここを変えると全体に反映される) =====
+        // 倍率: ルール説明の表示と、獲得コインの計算の両方に使われる
+        const MULTIPLIER = { jackpot: 5, zorome: 3, other: 0 };
+        // 最後のメッセージを出してから、獲得コインの画面に移るまでの待ち時間(ミリ秒)
+        const NEXT_DELAY = 10000;
+        // メッセージが自動で次に進むまでの待ち時間(ミリ秒)
+        const AUTO_DELAY = 1000;
+        // 数字が1つずつ出てくる間隔(ミリ秒)
+        const REVEAL_INTERVAL = 600;
+
+        // ===== 画面の切り替え =====
+        const screens = {
+            rules: document.getElementById('screen-rules'),
+            game: document.getElementById('screen-game'),
+            result: document.getElementById('screen-result'),
+            admin: document.getElementById('screen-admin')
+        };
+
+        const adminOpen = document.getElementById('admin-open');
+        let currentScreen = 'rules'; // 今どの画面か(管理者画面から戻るときに使う)
+
+        function showScreen(name) {
+            currentScreen = name;
+            for (const key in screens) {
+                screens[key].classList.toggle('hidden', key !== name);
+            }
+            // 管理者画面の中では、「管理者サイトへ」ボタンを隠す
+            adminOpen.classList.toggle('hidden', name === 'admin');
+        }
+
+        // ===== ルール説明 =====
+        document.getElementById('rule-jackpot').textContent = MULTIPLIER.jackpot;
+        document.getElementById('rule-zorome').textContent = MULTIPLIER.zorome;
+        document.getElementById('rule-other').textContent = MULTIPLIER.other;
+
+        const betForm = document.getElementById('bet-form');
+        const betOther = document.getElementById('bet_other');
+        let bet = 0; // かけたコイン(ゲームの間、ここに持っておく)
+
+        // 「それ以上」を選んだときだけ、数字の入力欄を使えるようにする
+        betForm.querySelectorAll('input[name="bet"]').forEach((radio) => {
+            radio.addEventListener('change', () => {
+                betOther.disabled = (radio.value !== 'other');
+            });
+        });
+
+        // 「決定」: 入力チェックを通った場合だけ、ここに来る
+        betForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const chosen = betForm.querySelector('input[name="bet"]:checked').value;
+            bet = (chosen === 'other') ? Number(betOther.value) : Number(chosen);
+            startGame();
+        });
+
+        // ===== スロット =====
+        function randInt(min, maxExclusive) {
+            return Math.floor(Math.random() * (maxExclusive - min)) + min;
+        }
+
+        function buildSteps() {
+            const steps = [];
+
+            function addFrame(a, b, c) {
+                steps.push({ type: "frame", a: a, b: b, c: c });
+            }
+            function addMessage(text) {
+                steps.push({ type: "message", text: text });
+            }
+            function addChance(text) {
+                steps.push({ type: "chance", text: text });
+            }
+
+            let a = randInt(5, 9);
+            let b = randInt(5, 9);
+            let c = randInt(5, 9);
+            let n = 0;
+
+            addFrame(a, b, c);
+
+            for (let d = 1; d < 5; d++) {
+                if (a === b && b === c) {
+                    if (a === 7) {
+                        addChance("777おめでとう!!");
+                    } else {
+                        while (n < 1) {
+                            addChance("チャンス開始!");
+                            addChance("777を狙え!");
+                            addChance("※チャンスになると、7になる確率が1/4から1/2にアップ!!そして、必ず同じ数が出るようになる!!");
+                            n++;
+                        }
+                        for (let e = 0; e < 2; e++) {
+                            a = randInt(6, 7);
+                            b = a;
+                            c = a;
+                            addFrame(a, b, c);
+                        }
+                    }
+                } else {
+                    addMessage("もう一回遊べるドン");
+                    a = randInt(5, 9);
+                    b = randInt(5, 9);
+                    c = randInt(5, 9);
+                    addFrame(a, b, c);
+                }
+            }
+
+            addMessage("また遊びにきてね♩");
+
+            return steps;
+        }
+
+        const gameScreen = document.getElementById('game-screen');
+        const numA = document.getElementById('num-a');
+        const numB = document.getElementById('num-b');
+        const numC = document.getElementById('num-c');
+        const chanceArea = document.getElementById('chance-area');
+
+        let steps = [];
+        let index = 0;
+        let busy = false;
+
+        // 新しいゲームを始める(毎回、数字の流れを作り直す)
+        function startGame() {
+            steps = buildSteps();
+            index = 0;
+            busy = false;
+            numA.textContent = "-";
+            numB.textContent = "-";
+            numC.textContent = "-";
+            chanceArea.textContent = "カードをクリックしてスタート";
+            showScreen('game');
+        }
+
+        // 次のstepがメッセージ系なら、少し待って自動で表示する
+        function autoNext() {
+            if (index >= steps.length) return;
+            if (steps[index].type === "frame") return; // 数字はクリック待ち
+
+            busy = true; // 待っている間にクリックされても二重に進まないようにする
+            setTimeout(() => {
+                busy = false;
+                showStep();
+            }, AUTO_DELAY);
+        }
+
+        function revealFrame(step, isLast) {
+            busy = true;
+            chanceArea.textContent = "";
+
+            numA.textContent = "-";
+            numB.textContent = "-";
+            numC.textContent = "-";
+
+            setTimeout(() => { numC.textContent = step.c; }, REVEAL_INTERVAL * 1);
+            setTimeout(() => { numB.textContent = step.b; }, REVEAL_INTERVAL * 2);
+            setTimeout(() => {
+                numA.textContent = step.a;
+                if (!isLast) {
+                    busy = false;
+                    autoNext(); // 数字が揃ったあと、次がメッセージなら自動で出す
+                }
+            }, REVEAL_INTERVAL * 3);
+        }
+
+        function showStep() {
+            if (busy) return;
+
+            const step = steps[index];
+            index++;
+
+            const isLast = index >= steps.length;
+
+            // 今のが最後のstepだったら、結果画面への移動を予約する
+            if (isLast) {
+                busy = true; // 待っている間にクリックされても何も起きないようにする
+                setTimeout(showResult, NEXT_DELAY);
+            }
+
+            if (step.type === "frame") {
+                revealFrame(step, isLast);
+            } else {
+                chanceArea.textContent = step.text;
+                if (!isLast) {
+                    autoNext(); // 次もメッセージなら、続けて自動で出す
+                }
+            }
+        }
+
+        gameScreen.addEventListener('click', showStep);
+
+        // ===== 獲得コイン =====
+        function showResult() {
+            // stepsを後ろから見て、最初に見つかったframe = 最後に表示した3つの数字
+            const last = [...steps].reverse().find((s) => s.type === "frame");
+
+            let multiplier;
+            if (last.a === 7 && last.b === 7 && last.c === 7) {
+                multiplier = MULTIPLIER.jackpot;
+            } else if (last.a === last.b && last.b === last.c) {
+                multiplier = MULTIPLIER.zorome;
+            } else {
+                multiplier = MULTIPLIER.other;
+            }
+
+            document.getElementById('res-bet').textContent = bet;
+            document.getElementById('res-numbers').textContent = `${last.a} ${last.b} ${last.c}`;
+            document.getElementById('res-multiplier').textContent = multiplier;
+            document.getElementById('res-coins').textContent = bet * multiplier;
+
+            showScreen('result');
+        }
+
+        // 「トップに戻る」: 入力をリセットして、ルール説明に戻る
+        document.getElementById('back-button').addEventListener('click', () => {
+            betForm.reset();
+            betOther.disabled = true;
+            bet = 0;
+            showScreen('rules');
+        });
+
+        // ===== 管理者(スタッフ向けトリセツ) =====
+        let previousScreen = 'rules'; // 管理者画面を開く前の画面
+
+        adminOpen.addEventListener('click', () => {
+            previousScreen = currentScreen;
+            showScreen('admin');
+        });
+
+        document.getElementById('admin-back').addEventListener('click', () => {
+            showScreen(previousScreen);
+        });
+    </script>
+</body>
+</html>

@@ -336,11 +336,11 @@
         // 倍率: ルール説明の表示と、獲得コインの計算の両方に使われる
         const MULTIPLIER = { jackpot: 13, zorome: 10, other: 0 };
         // 最後のメッセージを出してから、獲得コインの画面に移るまでの待ち時間(ミリ秒)
-        const NEXT_DELAY = 10000;
+        const NEXT_DELAY = 2500;
         // メッセージが自動で次に進むまでの待ち時間(ミリ秒)
         const AUTO_DELAY = 1000;
         // 数字が1つずつ出てくる間隔(ミリ秒)
-        const REVEAL_INTERVAL = 600;
+        const REVEAL_INTERVAL = 1000;
 
         // ===== 画面の切り替え =====
         const screens = {
@@ -423,7 +423,7 @@
                             n++;
                         }
                         for (let e = 0; e < 2; e++) {
-                            a = randInt(6, 7);
+                            a = randInt(6, 8);
                             b = a;
                             c = a;
                             addFrame(a, b, c);

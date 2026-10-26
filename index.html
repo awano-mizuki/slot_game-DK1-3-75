@@ -11,36 +11,6 @@
 
     <style>
         body {
-            margin: 0;
-            font-family: "Zen Maru Gothic", sans-serif;
-            background: rgb(176, 61, 61);
-            color: #ffd17de2;
-        }
-
-        .site-header {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            padding: 12px;
-            background: rgba(0, 0, 0, 0.45);
-            border-bottom: 2px solid #fcf591;
-        }
-        .site-header a {
-            color: #fcf591;
-            text-decoration: none;
-            padding: 4px 16px;
-            border-radius: 6px;
-        }
-        .site-header a:hover {
-            background: rgba(255, 255, 255, 0.15);
-        }
-        /* 今いるページ */
-        .site-header a[aria-current="page"] {
-            background: #fcf591;
-            color: #7a2020;
-            font-weight: bold;
-        }
-        body {
             background-position: center;
             background-attachment: fixed;
             background-repeat: no-repeat;
@@ -184,16 +154,9 @@
     </style>
 </head>
 <body>
-    <header class="site-header">
-        <nav>
-            <a href="index.html" aria-current="page">スロットゲーム</a>
-            <a href="other.html">競馬のようなゲーム</a>
-        </nav>
-    </header>
     <header class="admin">
         <button type="button" class="admin-link" id="admin-open">管理者サイトへ！</button>
     </header>
-
     <!-- ① ルール説明 -->
     <section id="screen-rules" class="screen">
         <h1>ルール説明</h1>

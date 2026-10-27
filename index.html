@@ -151,6 +151,18 @@
             font-size: 15px;
             overflow-x: auto;
         }
+        #passwordInput[type="password"] {
+            font-family: inherit;
+            font-size: 18px;
+            color: #333;
+            background: #cfa7a5;
+
+            border: 2px solid #fcf591;
+            border-radius: 10px;
+            outline: none;
+
+            transition: border-color 0.2s, box-shadow 0.2s;
+            }
     </style>
 </head>
 <body>
@@ -242,6 +254,29 @@
     </section>
 
     <!-- ④ 管理者(スタッフ向けトリセツ) -->
+    <section id="screen-admin_password" class="screen hidden">
+        <h1>管理者ログイン</h1>
+
+        <form id="loginForm">
+            <input
+                class="password_check"
+                type="password"
+                id="passwordInput"
+                placeholder="パスワードを入力"
+                required
+            >
+            <p>
+                <button type="submit" class="btn">ログイン</button>
+            </p>
+        </form>
+
+        <strong><p id="statusMessage"></p></section>
+
+        <button type="button" class="btn" id="password-back">
+            もどる
+        </button>
+    </section>
+
     <section id="screen-admin" class="screen hidden">
         <h1>スタッフ向け-トリセツ</h1>
         <div class="panel admin-doc">
@@ -295,6 +330,21 @@
     </section>
 
     <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const password = document.getElementById('passwordInput').value;
+        const statusMessage = document.getElementById('statusMessage');
+
+        if (password === 'slot_1-3') {
+            showScreen('admin');
+            document.getElementById('passwordInput').value = '';
+            statusMessage.textContent = '';
+        } else {
+            statusMessage.textContent = 'パスワードが違います！';
+            statusMessage.style.color = 'yellow';
+        }
+       });
         // ===== 設定(ここを変えると全体に反映される) =====
         // 倍率: ルール説明の表示と、獲得コインの計算の両方に使われる
         const MULTIPLIER = { jackpot: 13, zorome: 10, other: 0 };
@@ -310,9 +360,10 @@
             rules: document.getElementById('screen-rules'),
             game: document.getElementById('screen-game'),
             result: document.getElementById('screen-result'),
+            password: document.getElementById('screen-admin_password'),
             admin: document.getElementById('screen-admin')
         };
-
+        
         const adminOpen = document.getElementById('admin-open');
         let currentScreen = 'rules'; // 今どの画面か(管理者画面から戻るときに使う)
 
@@ -323,6 +374,7 @@
             }
             // 管理者画面の中では、「管理者サイトへ」ボタンを隠す
             adminOpen.classList.toggle('hidden', name === 'admin');
+            adminOpen.classList.toggle('hidden', name === 'password')
         }
 
         // ===== ルール説明 =====
@@ -520,11 +572,15 @@
 
         adminOpen.addEventListener('click', () => {
             previousScreen = currentScreen;
-            showScreen('admin');
+            showScreen('password');
         });
 
         document.getElementById('admin-back').addEventListener('click', () => {
             showScreen(previousScreen);
+        });
+
+        document.getElementById('password-back').addEventListener('click', () => {
+        showScreen(previousScreen);
         });
     </script>
 </body>

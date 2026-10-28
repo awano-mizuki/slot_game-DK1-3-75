@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -272,8 +271,8 @@
                 <li>
                     得点は、それぞれこうなっています。
                     <ol>
-                        <li>777が出た場合： 3倍</li>
-                        <li>8のゾロ目で終了した場合： 2倍</li>
+                        <li><p>777が出たら <span id="rule-jackpot">3</span> 倍</p></li>
+                        <li><p>8のゾロ目が出たら <span id="rule-zorome">2</span> 倍！</p></li>
                         <li>そのほかの数字でのゾロ目で終了した場合：+50コイン</li>
                         <li>その他ゾロ目ではない数字で終了した場合：何ももらえない</li>
                     </ol>
@@ -523,9 +522,6 @@
 
         document.getElementById("rule-zorome").textContent =
             MULTIPLIER.other_zorome;
-
-        document.getElementById("rule-other").textContent =
-            MULTIPLIER.other;
 
         // ===== コイン設定 =====
 

@@ -621,7 +621,7 @@
 
             // 基本5回。ゾロ目のチャンスが発生した場合は、
             // 追加の2回を含めてゲームを終了する。
-            while (spins < 5) {
+            while (spins < 3) {
                 a = randInt(5, 9);
                 b = randInt(5, 9);
                 c = randInt(5, 9);
@@ -651,7 +651,7 @@
                     // 6か7を選ぶことで、7の確率は1/2。
                     for (let i = 0; i < 2; i++) {
                         a = randInt(6, 8);
-                        b = randInt(6,8);
+                        b = randInt(6, 8);
                         c = a;
 
                         addFrame(steps, a, b, c);
@@ -660,7 +660,7 @@
                     break;
                 }
 
-                if (spins < 5) {
+                if (spins < 3) {
                     addMessage(steps, "もう一回遊べるドン！");
                 }
             }
